@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Freelance Rate Calculator</title>
+
+    <!-- Layout: two columns, logic in script below -->
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .quote {
+            font-style: italic;
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0 12px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* FIXED: secondary buttons defined OUTSIDE button:hover */
+        .secondary-button {
+            background: #e9ecef;
+            color: #333;
+            margin-top: 6px;
+        }
+
+        .secondary-button:hover {
+            background: #d6d8db;
+        }
+
+        .section-label {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .result {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .tips {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0 0 0;
+        }
+
+        ul {
+            padding-left: 18px;
+        }
+
+        #status {
+            font-size: 14px;
+            margin: 6px 0 12px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .main-grid {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+
+        .left-pane,
+        .right-pane {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .right-pane {
+            max-width: 420px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                flex-direction: column;
+            }
+            .right-pane {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section-label">Multi-currency design rate calculator for beginners</div>
+
+        <h1>🖌️ Design Freelance Rate Calculator</h1>
+        <p class="quote">
+            "When people have trouble using something, it's not their fault; it's bad design." – Don Norman
+        </p>
+
+        <!-- Currency selection -->
+        <label>Currency for your inputs:</label>
+        <select id="currency"></select>
+        <div id="status"></div>
+
+        <!-- Two-column layout: LEFT inputs + result, RIGHT benchmarks + tips -->
+        <div class="main-grid">
+            <div class="left-pane">
+                <h2>Your goals (in selected currency)</h2>
+
+                <label>Desired annual salary:</label>
+                <input type="number" id="salary" value="3000000" min="0">
+
+                <label>Annual business expenses:</label>
+                <input type="number" id="expenses" value="500000" min="0">
+
+                <label>Working days per year:</label>
+                <input type="number" id="days" value="220" min="1">
+
+                <label>Hours per day:</label>
+                <input type="number" id="hours" value="8" min="1">
+
+                <label>Billable percentage (0–100):</label>
+                <input type="number" id="billable" value="70" min="1" max="100">
+
+                <button id="calcBtn">Calculate my rate</button>
+
+                <!-- helper buttons -->
+                <button type="button" id="saveBtn" class="secondary-button">Save these as my default</button>
+                <button type="button" id="resetBtn" class="secondary-button">Reset to starter defaults</button>
+
+                <div id="result"></div>
+            </div>
+
+            <div class="right-pane">
+                <h2>Beginner benchmark ranges</h2>
+                <table id="benchmarks">
+                    <tr><th>Service</th><th>Hourly</th><th>Project</th></tr>
+                </table>
+
+                <div class="tips">
+                    <h3>💡 Tips for new freelancers</h3>
+                    <ul>
+                        <li>Billable % is how much of your time is actually paid work; 50–70% is common.[web:9][web:66]</li>
+                        <li>Start around the middle of the suggested range, not the bottom.[web:4][web:72]</li>
+                        <li>We convert between your currency, USD and INR using a free, open currency API.[web:30][web:61]</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIG
+        var supportedCurrencies = ['INR','USD','EUR','GBP','CAD','AUD','JPY','CHF','SGD','AED'];
+
+        // Benchmarks defined in USD
+        var benchmarksUSD = {
+            hourly: {logo: [20,35], social: [20,35], ui: [25,40]},
+            project: {logo: [100,400], social: [75,200], ui: [500,1500]}
+        };
+
+        var services = ['logo', 'social', 'ui'];
+        var rates = {};         // 1 USD = rates[code]
+        var rateStatus = 'loading';
+
+        function populateCurrencySelect() {
+            var select = document.getElementById('currency');
+            select.innerHTML = '';
+            for (var i = 0; i < supportedCurrencies.length; i++) {
+                var code = supportedCurrencies[i];
+                var opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = code;
+                if (code === 'INR') opt.selected = true;
+                select.appendChild(opt);
+            }
+        }
+
+        function loadRates() {
+            var statusEl = document.getElementById('status');
+            statusEl.innerHTML = '<div class="success">Loading live currency rates…</div>';
+
+            fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json')
+                .then(function(res) {
+                    if (!res.ok) {
+                        throw new Error('API unavailable');
+                    }
+                    return res.json();
+                })
+                .then(function(data) {
+                    rates = data.usd || {};
+                    rates.usd = 1;
+                    rateStatus = 'live';
+                    var inrRate = rates.inr ? rates.inr.toFixed(2) : 'N/A';
+                    statusEl.innerHTML = '<div class="success">Live rates loaded (1 USD ≈ ' + inrRate + ' INR)</div>';
+                    updateBenchmarks();
+                    calculate();
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    rates = {
+                        inr: 90.92, eur: 0.92, gbp: 0.79, cad: 1.35,
+                        aud: 1.50, jpy: 150, chf: 0.86, sgd: 1.33, aed: 3.67, usd: 1
+                    };
+                    rateStatus = 'fallback';
+                    statusEl.innerHTML = '<div class="error">Could not load live rates. Using fallback values.</div>';
+                    updateBenchmarks();
+                    calculate();
+                });
+        }
+
+        function convert(amount, fromCode, toCode) {
+            var from = fromCode.toLowerCase();
+            var to = toCode.toLowerCase();
+            if (from === to) return amount;
+            if (!rates[from] || !rates[to]) return null;
+            var amountInUSD = amount / rates[from];
+            return amountInUSD * rates[to];
+        }
+
+        function showError(message) {
+            document.getElementById('result').innerHTML =
+                '<div class="error">' + message + '</div>';
+        }
+
+        function validateInputs() {
+            var salary   = parseFloat(document.getElementById('salary').value);
+            var expenses = parseFloat(document.getElementById('expenses').value);
+            var days     = parseFloat(document.getElementById('days').value);
+            var hours    = parseFloat(document.getElementById('hours').value);
+            var billable = parseFloat(document.getElementById('billable').value);
+
+            if (isNaN(salary) || isNaN(expenses) || isNaN(days) || isNaN(hours) || isNaN(billable)) {
+                showError('Please fill in all fields with numbers.');
+                return false;
+            }
+            if (salary < 0 || expenses < 0 || days <= 0 || hours <= 0 || billable <= 0 || billable > 100) {
+                showError('Use positive numbers; billable must be between 1 and 100.');
+                return false;
+            }
+            return true;
+        }
+
+        function updateBenchmarks() {
+            var curr = document.getElementById('currency').value;
+            var code = curr.toLowerCase();
+            var rate = rates[code] || 1;
+            var table = document.getElementById('benchmarks');
+
+            var rows = '<tr><th>Service</th><th>Hourly</th><th>Project</th></tr>';
+
+            for (var i = 0; i < services.length; i++) {
+                var svc = services[i];
+                var hLow  = Math.round(benchmarksUSD.hourly[svc][0] * rate);
+                var hHigh = Math.round(benchmarksUSD.hourly[svc][1] * rate);
+                var pLow  = Math.round(benchmarksUSD.project[svc][0] * rate);
+                var pHigh = Math.round(benchmarksUSD.project[svc][1] * rate);
+
+                var label = (svc === 'logo')   ? 'Logo design'
+                          : (svc === 'social') ? 'Social graphics'
+                          :                     'UI design';
+
+                rows += '<tr>' +
+                        '<td>' + label + '</td>' +
+                        '<td>' + curr + ' ' + hLow + ' – ' + hHigh + '</td>' +
+                        '<td>' + curr + ' ' + pLow + ' – ' + pHigh + '</td>' +
+                        '</tr>';
+            }
+
+            table.innerHTML = rows;
+        }
+
+        function calculate() {
+            if (!validateInputs()) return;
+
+            var curr     = document.getElementById('currency').value;
+            var salary   = parseFloat(document.getElementById('salary').value);
+            var expenses = parseFloat(document.getElementById('expenses').value);
+            var days     = parseFloat(document.getElementById('days').value);
+            var hours    = parseFloat(document.getElementById('hours').value);
+            var billable = parseFloat(document.getElementById('billable').value);
+
+            var totalNeeded = salary + expenses;
+            var billableHoursPerYear = days * hours * (billable / 100);
+
+            var hourly = Math.round((totalNeeded / billableHoursPerYear) * 100) / 100;
+            var daily  = Math.round(hourly * 8 * 100) / 100;
+
+            var hourlyUSD = null, dailyUSD = null, hourlyINR = null, dailyINR = null;
+
+            if (Object.keys(rates).length > 0) {
+                hourlyUSD = convert(hourly, curr, 'USD');
+                dailyUSD  = convert(daily,  curr, 'USD');
+                hourlyINR = convert(hourly, curr, 'INR');
+                dailyINR  = convert(daily,  curr, 'INR');
+            }
+
+            var statusLabel = (rateStatus === 'live') ? 'Live currency rates' : 'Fallback currency rates';
+
+            var conversionText = '';
+            if (hourlyUSD && hourlyINR) {
+                conversionText =
+                    '<br><br>' +
+                    '≈ USD: $' + hourlyUSD.toFixed(2) + ' / hour, $' + dailyUSD.toFixed(2) + ' / day' +
+                    '<br>' +
+                    '≈ INR: ₹' + Math.round(hourlyINR) + ' / hour, ₹' + Math.round(dailyINR) + ' / day';
+            } else {
+                conversionText = '<br><br>(Currency conversion unavailable; showing only your chosen currency.)';
+            }
+
+            document.getElementById('result').innerHTML =
+                '<div class="result">' +
+                '<strong>Your suggested rates in ' + curr + ' (' + statusLabel + '):</strong><br>' +
+                'Hourly: ' + curr + ' ' + hourly.toLocaleString() + '<br>' +
+                'Daily (8h): ' + curr + ' ' + daily.toLocaleString() + '<br>' +
+                'Billable hours/year: ' + Math.round(billableHoursPerYear) +
+                conversionText +
+                '</div>';
+        }
+
+        // --- SAVE / LOAD DEFAULTS USING localStorage ---
+        var DEFAULTS_KEY = 'designRateDefaults_v1';
+
+        function saveDefaults() {
+            var data = {
+                currency: document.getElementById('currency').value,
+                salary:   document.getElementById('salary').value,
+                expenses: document.getElementById('expenses').value,
+                days:     document.getElementById('days').value,
+                hours:    document.getElementById('hours').value,
+                billable: document.getElementById('billable').value
+            };
+            try {
+                localStorage.setItem(DEFAULTS_KEY, JSON.stringify(data));
+                document.getElementById('status').innerHTML =
+                    '<div class="success">Saved your defaults in this browser.</div>';
+            } catch (e) {
+                console.error(e);
+                document.getElementById('status').innerHTML =
+                    '<div class="error">Could not save defaults (storage error).</div>';
+            }
+        }
+
+        function loadDefaults() {
+            try {
+                var raw = localStorage.getItem(DEFAULTS_KEY);
+                if (!raw) return;
+
+                var data = JSON.parse(raw);
+                if (data.currency) document.getElementById('currency').value = data.currency;
+                if (data.salary)   document.getElementById('salary').value   = data.salary;
+                if (data.expenses) document.getElementById('expenses').value = data.expenses;
+                if (data.days)     document.getElementById('days').value     = data.days;
+                if (data.hours)    document.getElementById('hours').value    = data.hours;
+                if (data.billable) document.getElementById('billable').value = data.billable;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function resetDefaults() {
+            try {
+                localStorage.removeItem(DEFAULTS_KEY);
+            } catch (e) {
+                console.error(e);
+            }
+            document.getElementById('currency').value = 'INR';
+            document.getElementById('salary').value   = 3000000;
+            document.getElementById('expenses').value = 500000;
+            document.getElementById('days').value     = 220;
+            document.getElementById('hours').value    = 8;
+            document.getElementById('billable').value = 70;
+            updateBenchmarks();
+            calculate();
+        }
+
+        // Initialise after DOM ready
+        document.addEventListener('DOMContentLoaded', function () {
+            populateCurrencySelect();
+            loadDefaults(); // load saved values if any
+
+            document.getElementById('calcBtn').addEventListener('click', calculate);
+            document.getElementById('currency').addEventListener('change', function () {
+                updateBenchmarks();
+                calculate();
+            });
+
+            var inputs = document.querySelectorAll('input');
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].addEventListener('input', calculate);
+            }
+
+            var saveBtn  = document.getElementById('saveBtn');
+            var resetBtn = document.getElementById('resetBtn');
+            if (saveBtn)  saveBtn.addEventListener('click', saveDefaults);
+            if (resetBtn) resetBtn.addEventListener('click', resetDefaults);
+
+            loadRates();
+        });
+    </script>
+</body>
+</html>
